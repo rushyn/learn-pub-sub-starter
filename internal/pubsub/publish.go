@@ -4,13 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 func PublishJSON[T any](ch *amqp.Channel, exchange, key string, val T) error{
-	log.Println("Publishing Message to Ch")
+	//log.Println("Publishing Message to Ch")
 	Jval, err := json.Marshal(val)
 	if err != nil{
 		fmt.Println("fail to marshal $val")

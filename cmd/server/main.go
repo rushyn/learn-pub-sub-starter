@@ -2,7 +2,9 @@ package main
 
 import (
 	"fmt"
+	"log"
 
+	"github.com/bootdotdev/learn-pub-sub-starter/internal/gamelogic"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/pubsub"
 	"github.com/bootdotdev/learn-pub-sub-starter/internal/routing"
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -10,6 +12,8 @@ import (
 
 func main() {
 	fmt.Println("Starting Peril server...")
+
+	gamelogic.PrintServerHelp()
 
 	const conStr = "amqp://guest:guest@localhost:5672/"
 
@@ -20,9 +24,6 @@ func main() {
 	}
 	defer newCon.Close()
 	fmt.Println("Peril server Started")
-	fmt.Println("----------------------------------")
-	fmt.Println("Wait for a signal (Ctrl+C) to exit")
-	fmt.Println("----------------------------------")
 
 	ch, err := newCon.Channel()
 	if err != nil{
@@ -30,13 +31,51 @@ func main() {
 		fmt.Printf("%s\n", err.Error())
 	}
 
+	for {
+		input := gamelogic.GetInput()
 
-	err = pubsub.PublishJSON(ch, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{
-		IsPaused: true,
-	})
-	if err != nil {
-		fmt.Println("PublishJason Error")
-		fmt.Println(err.Error())
+		if input[0] == "pause"{
+
+			log.Println("pause")
+
+			err = pubsub.PublishJSON(ch, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{
+				IsPaused: true,
+			})
+			if err != nil {
+				fmt.Println("PublishJason Error")
+				fmt.Println(err.Error())
+			}
+			continue
+		}
+
+		if input[0] == "resume"{
+
+			log.Println("resume")
+			
+			err = pubsub.PublishJSON(ch, routing.ExchangePerilDirect, routing.PauseKey, routing.PlayingState{
+				IsPaused: false,
+			})
+			if err != nil {
+				fmt.Println("PublishJason Error")
+				fmt.Println(err.Error())
+			}
+
+			continue
+
+		}
+
+		if input[0] == "quit"{
+
+			log.Println("quit")
+			break
+		}
+
+
+		log.Printf("%s is an invalid command \n", input[0])
+		
+
+
+
 	}
 
 }
